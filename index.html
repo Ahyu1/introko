@@ -1,0 +1,2396 @@
+ <!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Intro ni xyrelle</title>
+
+<style>
+
+*{
+    box-sizing:border-box;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:#000;
+    font-family:"Courier New",Courier,monospace;
+    color:#00ff41;
+}
+
+/* =========================
+   MATRIX BACKGROUND
+   ========================= */
+
+#matrix{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+    opacity:.5;
+}
+
+body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.3);
+    z-index:1;
+    pointer-events:none;
+}
+
+.scanlines{
+    position:fixed;
+    inset:0;
+    z-index:30;
+    pointer-events:none;
+
+    background:
+        repeating-linear-gradient(
+            to bottom,
+            rgba(0,0,0,.08) 0px,
+            rgba(0,0,0,.08) 1px,
+            transparent 2px,
+            transparent 4px
+        );
+}
+
+.glow{
+    position:fixed;
+    inset:0;
+    z-index:31;
+    pointer-events:none;
+    box-shadow:inset 0 0 100px rgba(0,255,65,.08);
+}
+
+/* =========================
+   START SCREEN
+   ========================= */
+
+#startScreen{
+    position:fixed;
+    inset:0;
+    z-index:20;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:rgba(0,0,0,.92);
+
+    color:#00ff41;
+
+    font-size:22px;
+    font-weight:bold;
+    letter-spacing:3px;
+
+    cursor:pointer;
+    text-align:center;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 15px #00ff41,
+        0 0 30px #00ff41;
+}
+
+#startScreen span{
+    animation:startBlink 1.2s infinite;
+}
+
+@keyframes startBlink{
+    50%{
+        opacity:.3;
+    }
+}
+
+/* =========================
+   INITIALIZATION PAGE
+   ========================= */
+
+#initPage{
+    position:fixed;
+    inset:0;
+    z-index:5;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    opacity:1;
+
+    transition:opacity .6s ease;
+}
+
+#initPage.hide{
+    opacity:0;
+    pointer-events:none;
+}
+
+#initContainer{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+
+    text-align:center;
+
+    padding:20px;
+
+    color:#00ff41;
+}
+
+/* BOOT TYPING */
+
+#typing{
+    min-height:55px;
+    max-width:90vw;
+
+    font-size:40px;
+    font-weight:bold;
+    letter-spacing:2px;
+
+    color:#00ff41;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 10px #00ff41,
+        0 0 20px #00ff41;
+}
+
+#typing::after{
+    content:"|";
+    margin-left:5px;
+    animation:cursorBlink .7s infinite;
+}
+
+@keyframes cursorBlink{
+    50%{
+        opacity:0;
+    }
+}
+
+/* LOADER */
+
+#loader{
+    display:none;
+
+    width:38px;
+    height:38px;
+
+    margin-top:20px;
+
+    border:4px solid rgba(0,255,65,.15);
+    border-top:4px solid #00ff41;
+
+    border-radius:50%;
+
+    animation:spin .8s linear infinite;
+
+    box-shadow:
+        0 0 10px #00ff41,
+        0 0 20px #00ff41;
+}
+
+@keyframes spin{
+    to{
+        transform:rotate(360deg);
+    }
+}
+
+/* OPEN FILE */
+
+#openFile{
+    display:none;
+
+    margin-top:25px;
+    padding:12px 24px;
+
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+
+    background:rgba(0,20,0,.9);
+
+    color:#00ff41;
+
+    border:1px solid #00ff41;
+    border-radius:4px;
+
+    font-family:"Courier New",monospace;
+    font-size:18px;
+    font-weight:bold;
+
+    letter-spacing:2px;
+
+    cursor:pointer;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 10px #00ff41;
+
+    box-shadow:
+        0 0 5px #00ff41,
+        inset 0 0 10px rgba(0,255,65,.1);
+
+    transition:.2s ease;
+}
+
+#openFile:hover{
+    background:#00ff41;
+    color:#000;
+
+    text-shadow:none;
+
+    box-shadow:
+        0 0 10px #00ff41,
+        0 0 25px #00ff41,
+        0 0 50px rgba(0,255,65,.5);
+}
+
+#openFile:active{
+    transform:scale(.95);
+}
+
+.fileIcon{
+    font-size:21px;
+}
+
+/* =========================
+   WINDOWS
+   ========================= */
+
+#filePage,
+#portfolioPage{
+    position:fixed;
+    inset:0;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:30px;
+
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
+
+#filePage{
+    z-index:6;
+}
+
+#portfolioPage{
+    z-index:7;
+}
+
+#filePage.show,
+#portfolioPage.show{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+}
+
+/* =========================
+   FILE WINDOW
+   ========================= */
+
+#fileWindow,
+#portfolioWindow{
+
+    width:min(950px,92vw);
+    height:min(650px,82vh);
+
+    background:rgba(0,0,0,.97);
+
+    border:1px solid #00ff41;
+    border-radius:14px;
+
+    overflow:hidden;
+
+    box-shadow:
+        0 0 5px #00ff41,
+        0 0 15px rgba(0,255,65,.8),
+        0 0 40px rgba(0,255,65,.35),
+        inset 0 0 30px rgba(0,255,65,.04);
+
+    transform:scale(.15);
+    opacity:0;
+}
+
+#portfolioWindow{
+    width:min(1000px,92vw);
+}
+
+#filePage.show #fileWindow,
+#portfolioPage.show #portfolioWindow{
+    animation:filePop .7s cubic-bezier(.17,.89,.32,1.25) forwards;
+}
+
+@keyframes filePop{
+
+    0%{
+        transform:scale(.15);
+        opacity:0;
+    }
+
+    60%{
+        transform:scale(1.04);
+        opacity:1;
+    }
+
+    100%{
+        transform:scale(1);
+        opacity:1;
+    }
+
+}
+
+/* =========================
+   WINDOW HEADER
+   ========================= */
+
+#fileHeader,
+#portfolioHeader{
+
+    height:52px;
+
+    display:flex;
+    align-items:center;
+
+    padding:0 14px 0 18px;
+
+    background:rgba(0,255,65,.035);
+
+    border-bottom:1px solid rgba(0,255,65,.45);
+
+    color:#00ff41;
+}
+
+.windowButtons{
+    display:flex;
+    align-items:center;
+    gap:7px;
+
+    margin-right:16px;
+}
+
+.windowButton{
+    width:9px;
+    height:9px;
+
+    border-radius:50%;
+
+    border:1px solid #00ff41;
+
+    box-shadow:0 0 5px #00ff41;
+}
+
+.fileName{
+    font-size:14px;
+    letter-spacing:2px;
+    opacity:.8;
+}
+
+#closeFile,
+#closePortfolio{
+
+    margin-left:auto;
+
+    width:32px;
+    height:32px;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    background:transparent;
+
+    color:#00ff41;
+
+    border:1px solid transparent;
+    border-radius:5px;
+
+    font-family:"Courier New",monospace;
+    font-size:22px;
+    font-weight:bold;
+
+    cursor:pointer;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 10px #00ff41;
+
+    transition:.2s ease;
+}
+
+#closeFile:hover,
+#closePortfolio:hover{
+
+    background:#00ff41;
+    color:#000;
+
+    text-shadow:none;
+
+    box-shadow:
+        0 0 10px #00ff41,
+        0 0 25px #00ff41,
+        0 0 40px rgba(0,255,65,.5);
+}
+
+#closeFile:active,
+#closePortfolio:active{
+    transform:scale(.85);
+}
+
+/* =========================
+   PROFILE CONTENT
+   ========================= */
+
+#fileContent{
+
+    height:calc(100% - 52px);
+
+    padding:40px 50px;
+
+    overflow-y:auto;
+
+    color:#00ff41;
+
+    text-shadow:0 0 5px #00ff41;
+}
+
+.profileTitle{
+
+    margin:0 0 35px;
+
+    font-size:44px;
+
+    font-style:italic;
+
+    letter-spacing:9px;
+
+    font-weight:bold;
+
+    color:#00ff41;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 15px #00ff41,
+        0 0 30px #00ff41;
+
+    opacity:0;
+}
+
+.profileLayout{
+
+    display:grid;
+
+    grid-template-columns:1fr 260px;
+
+    gap:50px;
+
+    align-items:start;
+}
+
+.profileInfo{
+
+    display:flex;
+    flex-direction:column;
+    gap:16px;
+}
+
+.infoRow{
+
+    display:grid;
+
+    grid-template-columns:180px 1fr;
+
+    min-height:30px;
+
+    border-bottom:1px solid rgba(0,255,65,.18);
+
+    padding-bottom:9px;
+
+    opacity:0;
+}
+
+.infoLabel{
+
+    color:#00ff41;
+
+    font-weight:bold;
+
+    letter-spacing:1px;
+
+    text-shadow:0 0 6px #00ff41;
+}
+
+.infoLabel::before{
+    content:"> ";
+}
+
+.infoValue{
+
+    color:#00ff41;
+
+    opacity:.85;
+
+    text-shadow:0 0 5px #00ff41;
+}
+
+.profileLayout > div:last-child{
+
+    display:flex;
+
+    flex-direction:column;
+
+    align-items:center;
+
+    margin-top:-20px;
+    margin-right:10px;
+}
+
+.profilePicture{
+
+    width:230px;
+    height:280px;
+
+    object-fit:cover;
+
+    display:block;
+
+    border:2px solid #00ff41;
+
+    border-radius:8px;
+
+    background:#000;
+
+    box-shadow:
+        0 0 5px #00ff41,
+        0 0 12px #00ff41,
+        0 0 25px rgba(0,255,65,.8),
+        0 0 50px rgba(0,255,65,.3);
+
+    position:relative;
+
+    transition:.3s ease;
+
+    opacity:0;
+}
+
+.profilePicture:hover{
+
+    box-shadow:
+        0 0 8px #00ff41,
+        0 0 20px #00ff41,
+        0 0 40px #00ff41,
+        0 0 70px rgba(0,255,65,.5);
+
+    transform:scale(1.02);
+}
+
+.portfolioSection{
+
+    margin-top:18px;
+
+    display:flex;
+    justify-content:center;
+
+    opacity:0;
+}
+
+#viewPortfolio{
+
+    padding:11px 18px;
+
+    background:rgba(0,20,0,.9);
+
+    color:#00ff41;
+
+    border:1px solid #00ff41;
+    border-radius:5px;
+
+    font-family:"Courier New",monospace;
+
+    font-size:13px;
+    font-weight:bold;
+
+    letter-spacing:1.5px;
+
+    cursor:pointer;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 10px #00ff41;
+
+    box-shadow:
+        0 0 5px #00ff41,
+        inset 0 0 10px rgba(0,255,65,.08);
+
+    transition:.2s ease;
+}
+
+#viewPortfolio:hover{
+
+    background:#00ff41;
+
+    color:#000;
+
+    text-shadow:none;
+
+    box-shadow:
+        0 0 10px #00ff41,
+        0 0 25px #00ff41,
+        0 0 40px rgba(0,255,65,.5);
+}
+
+#viewPortfolio:active{
+    transform:scale(.94);
+}
+
+.terminalLine{
+
+    margin-top:35px;
+
+    color:#00ff41;
+
+    font-size:13px;
+
+    opacity:0;
+
+    letter-spacing:1px;
+}
+
+.terminalLine::before{
+    content:"$ ";
+}
+
+.profileTitle.typingVisible{
+    opacity:1;
+}
+
+.profilePicture.showImage{
+    animation:imageAppear .6s ease forwards;
+}
+
+.portfolioSection.showButton{
+    animation:elementAppear .5s ease forwards;
+}
+
+.terminalLine.showLine{
+    animation:elementAppear .5s ease forwards;
+}
+
+@keyframes imageAppear{
+
+    from{
+        opacity:0;
+        transform:translateY(-15px) scale(.9);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0) scale(1);
+    }
+
+}
+
+@keyframes elementAppear{
+
+    from{
+        opacity:0;
+        transform:translateY(8px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+.infoValue.typingValue::after{
+
+    content:"|";
+
+    animation:cursorBlink .7s infinite;
+}
+
+.profileTitle.typingTitle::after{
+
+    content:"|";
+
+    margin-left:5px;
+
+    animation:cursorBlink .7s infinite;
+}
+
+/* =========================
+   PORTFOLIO CONTENT
+   ========================= */
+
+#portfolioContent{
+
+    height:calc(100% - 52px);
+
+    padding:45px;
+
+    overflow-y:auto;
+
+    color:#00ff41;
+}
+
+#portfolioContent h1{
+
+    margin:0 0 40px;
+
+    min-height:54px;
+
+    font-size:45px;
+
+    font-style:italic;
+
+    letter-spacing:8px;
+
+    color:#00ff41;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 15px #00ff41,
+        0 0 30px #00ff41;
+}
+
+.portfolioTerminal{
+
+    border-left:2px solid #00ff41;
+
+    padding-left:20px;
+
+    color:#00ff41;
+
+    text-shadow:0 0 5px #00ff41;
+}
+
+.portfolioTerminal p{
+
+    min-height:20px;
+
+    margin:12px 0;
+
+    letter-spacing:1px;
+}
+
+/* TYPING CURSOR */
+
+#portfolioTitle::after,
+.portfolioTyping::after{
+
+    content:"|";
+
+    margin-left:4px;
+
+    animation:cursorBlink .7s infinite;
+}
+
+/* =========================
+   OPEN PROJECT BUTTON
+   ========================= */
+
+#openPortfolioProject{
+
+    padding:12px 28px;
+
+    background:rgba(0,20,0,.9);
+
+    color:#00ff41;
+
+    border:1px solid #00ff41;
+
+    border-radius:4px;
+
+    font-family:"Courier New",monospace;
+
+    font-size:15px;
+
+    font-weight:bold;
+
+    letter-spacing:2px;
+
+    cursor:pointer;
+
+    text-shadow:
+        0 0 5px #00ff41,
+        0 0 10px #00ff41;
+
+    box-shadow:
+        0 0 5px #00ff41,
+        inset 0 0 10px rgba(0,255,65,.1);
+
+    transition:.2s ease;
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transform:translateY(8px);
+}
+
+#openPortfolioProject.showOpenButton{
+
+    animation:portfolioButtonAppear .5s ease forwards;
+}
+
+#openPortfolioProject:hover{
+
+    background:#00ff41;
+
+    color:#000;
+
+    text-shadow:none;
+
+    box-shadow:
+        0 0 10px #00ff41,
+        0 0 25px #00ff41,
+        0 0 50px rgba(0,255,65,.5);
+}
+
+#openPortfolioProject:active{
+    transform:scale(.95);
+}
+
+@keyframes portfolioButtonAppear{
+
+    from{
+        opacity:0;
+        visibility:hidden;
+        transform:translateY(12px);
+    }
+
+    to{
+        opacity:1;
+        visibility:visible;
+        transform:translateY(0);
+    }
+
+}
+
+/* =========================
+   RESPONSIVE
+   ========================= */
+
+@media(max-width:700px){
+
+    #typing{
+        font-size:24px;
+    }
+
+    #startScreen{
+        font-size:16px;
+    }
+
+    #openFile{
+        font-size:15px;
+    }
+
+    #fileWindow,
+    #portfolioWindow{
+
+        width:94vw;
+        height:80vh;
+    }
+
+    #fileContent,
+    #portfolioContent{
+        padding:30px 25px;
+    }
+
+    .profileTitle,
+    #portfolioContent h1{
+
+        font-size:32px;
+        letter-spacing:6px;
+    }
+
+    .profileLayout{
+
+        grid-template-columns:1fr;
+
+        gap:35px;
+    }
+
+    .profileLayout > div:last-child{
+
+        order:-1;
+
+        margin:0;
+
+        align-items:center;
+    }
+
+    .profilePicture{
+
+        width:180px;
+        height:220px;
+    }
+
+    .infoRow{
+
+        grid-template-columns:125px 1fr;
+
+        font-size:13px;
+    }
+
+}
+
+@media(max-width:420px){
+
+    .profilePicture{
+
+        width:160px;
+        height:200px;
+    }
+
+    .infoRow{
+
+        grid-template-columns:110px 1fr;
+
+        font-size:11px;
+    }
+
+    #viewPortfolio{
+
+        font-size:11px;
+
+        padding:9px 12px;
+    }
+
+}
+
+</style>
+</head>
+
+
+<body>
+
+<!-- =========================
+     MATRIX
+     ========================= -->
+
+<canvas id="matrix"></canvas>
+
+
+<!-- =========================
+     EXISTING START SCREEN
+     ========================= -->
+
+<div id="startScreen">
+    <span>[ CLICK TO INITIALIZE ]</span>
+</div>
+
+
+<!-- =========================
+     EXISTING INITIALIZATION
+     ========================= -->
+
+<div id="initPage">
+
+    <div id="initContainer">
+
+        <div id="typing"></div>
+
+        <div id="loader"></div>
+
+        <button id="openFile">
+
+            <span class="fileIcon">📄</span>
+
+            <span>OPEN FILE</span>
+
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     PROFILE WINDOW
+     ========================= -->
+
+<div id="filePage">
+
+    <div id="fileWindow">
+
+        <div id="fileHeader">
+
+            <div class="windowButtons">
+
+                <div class="windowButton"></div>
+                <div class="windowButton"></div>
+                <div class="windowButton"></div>
+
+            </div>
+
+            <div class="fileName">
+                profile.exe
+            </div>
+
+            <button
+                id="closeFile"
+                aria-label="Close profile">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <div id="fileContent">
+
+            <h1
+                class="profileTitle"
+                id="profileTitle">
+            </h1>
+
+
+            <div class="profileLayout">
+
+                <div class="profileInfo">
+
+
+                    <div class="infoRow">
+
+                        <div class="infoLabel">
+                            NAME
+                        </div>
+
+                        <div
+                            class="infoValue"
+                            data-text="Cabayan, Xyrelle Denisse">
+                        </div>
+
+                    </div>
+
+
+                    <div class="infoRow">
+
+                        <div class="infoLabel">
+                            BIRTHDAY
+                        </div>
+
+                        <div
+                            class="infoValue"
+                            data-text="December 24, 2006">
+                        </div>
+
+                    </div>
+
+
+                    <div class="infoRow">
+
+                        <div class="infoLabel">
+                            HOMETOWN
+                        </div>
+
+                        <div
+                            class="infoValue"
+                            data-text="General Trias, Cavite">
+                        </div>
+
+                    </div>
+
+
+                    <div class="infoRow">
+
+                        <div class="infoLabel">
+                            PROVINCE
+                        </div>
+
+                        <div
+                            class="infoValue"
+                            data-text="Batangas">
+                        </div>
+
+                    </div>
+
+
+                    <div class="infoRow">
+
+                        <div class="infoLabel">
+                            FAVORITE COLOR
+                        </div>
+
+                        <div
+                            class="infoValue"
+                            style="color:blue"
+                            data-text="blue">
+                        </div>
+
+                    </div>
+
+
+                    <div class="infoRow">
+
+                        <div class="infoLabel">
+                            FAVORITE FOOD
+                        </div>
+
+                        <div
+                            class="infoValue"
+                            data-text="chicken wings sa coecsa">
+                        </div>
+
+                    </div>
+
+
+                    <div class="infoRow">
+
+                        <div class="infoLabel">
+                            PROGRAM
+                        </div>
+
+                        <div
+                            class="infoValue"
+                            data-text="BS Nursing">
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+
+                <div>
+
+                    <img
+                        class="profilePicture"
+                        src="xy3.jpg"
+                        alt="Profile picture">
+
+
+                    <div class="portfolioSection">
+
+                        <button id="viewPortfolio">
+
+                            <span>▣</span>
+
+                            VIEW PORTFOLIO
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="terminalLine">
+                profile data loaded...
+            </div>
+
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     PORTFOLIO WINDOW
+     ========================= -->
+
+<div id="portfolioPage">
+
+    <div id="portfolioWindow">
+
+        <div id="portfolioHeader">
+
+            <div class="windowButtons">
+
+                <div class="windowButton"></div>
+                <div class="windowButton"></div>
+                <div class="windowButton"></div>
+
+            </div>
+
+            <div class="fileName">
+                portfolio.exe
+            </div>
+
+            <button
+                id="closePortfolio"
+                aria-label="Close portfolio">
+
+                ×
+
+            </button>
+
+        </div>
+
+
+        <!--
+        =========================================
+        PORTFOLIO CONTENT
+        EVERYTHING HERE WILL TYPE
+        =========================================
+        -->
+
+        <div id="portfolioContent">
+
+            <h1 id="portfolioTitle"></h1>
+
+            <div class="portfolioTerminal">
+
+                <p id="portfolioLine1"></p>
+
+                <p id="portfolioLine2"></p>
+
+                <p id="portfolioLine3"></p>
+
+                <br>
+
+                <button id="openPortfolioProject">
+                    OPEN
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     EFFECTS
+     ========================= -->
+
+<div class="scanlines"></div>
+
+<div class="glow"></div>
+
+
+<script>
+
+/* =========================================
+   MATRIX
+   ========================================= */
+
+const canvas = document.getElementById("matrix");
+
+const ctx = canvas.getContext("2d");
+
+
+function resizeCanvas(){
+
+    canvas.width = window.innerWidth;
+
+    canvas.height = window.innerHeight;
+
+}
+
+
+resizeCanvas();
+
+
+const characters =
+"アァカサタナハマヤャラワ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+
+const fontSize = 16;
+
+let columns =
+Math.floor(canvas.width / fontSize);
+
+let drops = [];
+
+
+function initializeDrops(){
+
+    columns =
+    Math.floor(canvas.width / fontSize);
+
+    drops = [];
+
+    for(let i = 0; i < columns; i++){
+
+        drops[i] =
+        Math.random() * canvas.height / fontSize;
+
+    }
+
+}
+
+
+initializeDrops();
+
+
+function drawMatrix(){
+
+    ctx.fillStyle = "rgba(0,0,0,.06)";
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    ctx.font =
+    fontSize + "px 'Courier New'";
+
+
+    for(let i = 0; i < drops.length; i++){
+
+        const character =
+        characters.charAt(
+            Math.floor(
+                Math.random() * characters.length
+            )
+        );
+
+
+        const brightness =
+        Math.random();
+
+
+        if(brightness > .96){
+
+            ctx.fillStyle = "#fff";
+
+        }
+        else if(brightness > .70){
+
+            ctx.fillStyle = "#00ff41";
+
+        }
+        else{
+
+            ctx.fillStyle = "#008f11";
+
+        }
+
+
+        ctx.fillText(
+            character,
+            i * fontSize,
+            drops[i] * fontSize
+        );
+
+
+        if(
+            drops[i] * fontSize > canvas.height &&
+            Math.random() > .975
+        ){
+
+            drops[i] = 0;
+
+        }
+
+
+        drops[i]++;
+
+    }
+
+}
+
+
+setInterval(drawMatrix,35);
+
+
+/* =========================================
+   AUDIO
+   ========================================= */
+
+let audioContext = null;
+
+
+function initializeAudio(){
+
+    audioContext =
+    new (
+        window.AudioContext ||
+        window.webkitAudioContext
+    )();
+
+
+    if(audioContext.state === "suspended"){
+
+        audioContext.resume();
+
+    }
+
+}
+
+
+/* EXISTING TYPING SOUND */
+
+function playTypingSound(){
+
+    if(!audioContext){
+        return;
+    }
+
+
+    const now =
+    audioContext.currentTime;
+
+
+    const buffer =
+    audioContext.createBuffer(
+        1,
+        audioContext.sampleRate * .035,
+        audioContext.sampleRate
+    );
+
+
+    const data =
+    buffer.getChannelData(0);
+
+
+    for(let i = 0; i < data.length; i++){
+
+        data[i] =
+        Math.random() * 2 - 1;
+
+    }
+
+
+    const noise =
+    audioContext.createBufferSource();
+
+    noise.buffer = buffer;
+
+
+    const highpass =
+    audioContext.createBiquadFilter();
+
+    highpass.type = "highpass";
+
+    highpass.frequency.value = 1800;
+
+
+    const lowpass =
+    audioContext.createBiquadFilter();
+
+    lowpass.type = "lowpass";
+
+    lowpass.frequency.value = 5500;
+
+
+    const gain =
+    audioContext.createGain();
+
+
+    gain.gain.setValueAtTime(
+        .0001,
+        now
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        .055,
+        now + .003
+    );
+
+
+    gain.gain.exponentialRampToValueAtTime(
+        .0001,
+        now + .035
+    );
+
+
+    noise.connect(highpass);
+
+    highpass.connect(lowpass);
+
+    lowpass.connect(gain);
+
+    gain.connect(audioContext.destination);
+
+
+    noise.start(now);
+
+    noise.stop(now + .04);
+
+}
+
+
+/* =========================================
+   ELEMENTS
+   ========================================= */
+
+const startScreen =
+document.getElementById("startScreen");
+
+const initPage =
+document.getElementById("initPage");
+
+const filePage =
+document.getElementById("filePage");
+
+const portfolioPage =
+document.getElementById("portfolioPage");
+
+const typingElement =
+document.getElementById("typing");
+
+const loader =
+document.getElementById("loader");
+
+const openFile =
+document.getElementById("openFile");
+
+const closeFile =
+document.getElementById("closeFile");
+
+const viewPortfolio =
+document.getElementById("viewPortfolio");
+
+const closePortfolio =
+document.getElementById("closePortfolio");
+
+const profileTitle =
+document.getElementById("profileTitle");
+
+const infoRows =
+document.querySelectorAll(".infoRow");
+
+const profilePicture =
+document.querySelector(".profilePicture");
+
+const portfolioSection =
+document.querySelector(".portfolioSection");
+
+const terminalLine =
+document.querySelector(".terminalLine");
+
+
+/* =========================================
+   INITIAL BOOT TEXT
+   ========================================= */
+
+const initiatingText =
+"Initiating ..................";
+
+const helloText =
+"Hello, 201!";
+
+const messageText =
+"Reveal the anonymous profile.";
+
+let index = 0;
+
+
+/* =========================================
+   INTRO TYPING
+   ========================================= */
+
+function typeInitiating(){
+
+    if(index < initiatingText.length){
+
+        const character =
+        initiatingText.charAt(index);
+
+
+        typingElement.textContent +=
+        character;
+
+
+        if(character !== " "){
+
+            playTypingSound();
+
+        }
+
+
+        index++;
+
+
+        setTimeout(
+            typeInitiating,
+            100
+        );
+
+    }
+    else{
+
+        loader.style.display =
+        "block";
+
+
+        setTimeout(function(){
+
+            loader.style.display =
+            "none";
+
+            typingElement.textContent =
+            "";
+
+            index = 0;
+
+            typeHello();
+
+        },2000);
+
+    }
+
+}
+
+
+function typeHello(){
+
+    if(index < helloText.length){
+
+        const character =
+        helloText.charAt(index);
+
+
+        typingElement.textContent +=
+        character;
+
+
+        if(character !== " "){
+
+            playTypingSound();
+
+        }
+
+
+        index++;
+
+
+        setTimeout(
+            typeHello,
+            120
+        );
+
+    }
+    else{
+
+        setTimeout(function(){
+
+            typingElement.textContent =
+            "";
+
+            index = 0;
+
+            typeMessage();
+
+        },1200);
+
+    }
+
+}
+
+
+function typeMessage(){
+
+    if(index < messageText.length){
+
+        const character =
+        messageText.charAt(index);
+
+
+        typingElement.textContent +=
+        character;
+
+
+        if(character !== " "){
+
+            playTypingSound();
+
+        }
+
+
+        index++;
+
+
+        setTimeout(
+            typeMessage,
+            70
+        );
+
+    }
+    else{
+
+        openFile.style.display =
+        "inline-flex";
+
+    }
+
+}
+
+
+/* =========================================
+   PROFILE RESET
+   ========================================= */
+
+function resetProfile(){
+
+    profileTitle.classList.remove(
+        "typingVisible",
+        "typingTitle"
+    );
+
+
+    profilePicture.classList.remove(
+        "showImage"
+    );
+
+
+    portfolioSection.classList.remove(
+        "showButton"
+    );
+
+
+    terminalLine.classList.remove(
+        "showLine"
+    );
+
+
+    infoRows.forEach(row => {
+
+        row.style.opacity = "0";
+
+
+        const value =
+        row.querySelector(".infoValue");
+
+
+        value.textContent = "";
+
+
+        value.classList.remove(
+            "typingValue"
+        );
+
+    });
+
+}
+
+
+/* =========================================
+   PROFILE TITLE
+   ========================================= */
+
+function typeProfileTitle(){
+
+    profileTitle.textContent = "";
+
+    profileTitle.classList.add(
+        "typingVisible",
+        "typingTitle"
+    );
+
+
+    const text = "PROFILE";
+
+    let i = 0;
+
+
+    function type(){
+
+        if(i < text.length){
+
+            profileTitle.textContent +=
+            text.charAt(i);
+
+
+            playTypingSound();
+
+
+            i++;
+
+
+            setTimeout(
+                type,
+                120
+            );
+
+        }
+        else{
+
+            profileTitle.classList.remove(
+                "typingTitle"
+            );
+
+
+            setTimeout(
+                typeProfileDetails,
+                300
+            );
+
+        }
+
+    }
+
+
+    type();
+
+}
+
+
+/* =========================================
+   PROFILE DETAILS
+   ========================================= */
+
+function typeProfileDetails(){
+
+    let rowIndex = 0;
+
+
+    function nextRow(){
+
+        if(rowIndex >= infoRows.length){
+
+            profilePicture.classList.add(
+                "showImage"
+            );
+
+
+            setTimeout(() => {
+
+                portfolioSection.classList.add(
+                    "showButton"
+                );
+
+            },700);
+
+
+            setTimeout(() => {
+
+                terminalLine.classList.add(
+                    "showLine"
+                );
+
+            },1000);
+
+
+            return;
+
+        }
+
+
+        const row =
+        infoRows[rowIndex];
+
+
+        const value =
+        row.querySelector(".infoValue");
+
+
+        const text =
+        value.dataset.text;
+
+
+        row.style.opacity = "1";
+
+        value.textContent = "";
+
+
+        value.classList.add(
+            "typingValue"
+        );
+
+
+        let i = 0;
+
+
+        function typeValue(){
+
+            if(i < text.length){
+
+                const character =
+                text.charAt(i);
+
+
+                value.textContent +=
+                character;
+
+
+                if(character !== " "){
+
+                    playTypingSound();
+
+                }
+
+
+                i++;
+
+
+                setTimeout(
+                    typeValue,
+                    45
+                );
+
+            }
+            else{
+
+                value.classList.remove(
+                    "typingValue"
+                );
+
+
+                rowIndex++;
+
+
+                setTimeout(
+                    nextRow,
+                    150
+                );
+
+            }
+
+        }
+
+
+        typeValue();
+
+    }
+
+
+    nextRow();
+
+}
+
+
+/* =========================================
+   START
+   ========================================= */
+
+startScreen.addEventListener(
+    "click",
+    function(){
+
+        initializeAudio();
+
+
+        startScreen.style.display =
+        "none";
+
+
+        typeInitiating();
+
+    },
+    {once:true}
+);
+
+
+/* =========================================
+   OPEN PROFILE
+   ========================================= */
+
+openFile.addEventListener(
+    "click",
+    function(){
+
+        initPage.classList.add(
+            "hide"
+        );
+
+
+        setTimeout(
+            function(){
+
+                resetProfile();
+
+
+                filePage.classList.add(
+                    "show"
+                );
+
+
+                setTimeout(
+                    function(){
+
+                        typeProfileTitle();
+
+                    },
+                    500
+                );
+
+            },
+            500
+        );
+
+    }
+);
+
+
+/* =========================================
+   CLOSE PROFILE
+   ========================================= */
+
+closeFile.addEventListener(
+    "click",
+    function(){
+
+        filePage.classList.remove(
+            "show"
+        );
+
+
+        resetProfile();
+
+
+        setTimeout(
+            function(){
+
+                initPage.classList.remove(
+                    "hide"
+                );
+
+            },
+            500
+        );
+
+    }
+);
+
+
+/* =========================================
+   PORTFOLIO ELEMENTS
+   ========================================= */
+
+const portfolioTitle =
+document.getElementById("portfolioTitle");
+
+const portfolioLine1 =
+document.getElementById("portfolioLine1");
+
+const portfolioLine2 =
+document.getElementById("portfolioLine2");
+
+const portfolioLine3 =
+document.getElementById("portfolioLine3");
+
+const openPortfolioProject =
+document.getElementById(
+    "openPortfolioProject"
+);
+
+
+/* =========================================
+   PORTFOLIO TYPING FUNCTION
+   ========================================= */
+
+function typePortfolioText(
+    element,
+    text,
+    speed = 45
+){
+
+    return new Promise((resolve) => {
+
+        element.textContent = "";
+
+        element.classList.add(
+            "portfolioTyping"
+        );
+
+
+        let i = 0;
+
+
+        function typeCharacter(){
+
+            if(i < text.length){
+
+                const character =
+                text.charAt(i);
+
+
+                element.textContent +=
+                character;
+
+
+                /*
+                SAME SOUND AS YOUR
+                EXISTING BOOT TYPING
+                */
+
+                if(character !== " "){
+
+                    playTypingSound();
+
+                }
+
+
+                i++;
+
+
+                setTimeout(
+                    typeCharacter,
+                    speed
+                );
+
+            }
+            else{
+
+                element.classList.remove(
+                    "portfolioTyping"
+                );
+
+
+                resolve();
+
+            }
+
+        }
+
+
+        typeCharacter();
+
+    });
+
+}
+
+
+/* =========================================
+   RESET PORTFOLIO
+   ========================================= */
+
+function resetPortfolioTyping(){
+
+    portfolioTitle.textContent = "";
+
+    portfolioLine1.textContent = "";
+    portfolioLine2.textContent = "";
+    portfolioLine3.textContent = "";
+
+
+    portfolioTitle.classList.remove(
+        "portfolioTyping"
+    );
+
+
+    portfolioLine1.classList.remove(
+        "portfolioTyping"
+    );
+
+
+    portfolioLine2.classList.remove(
+        "portfolioTyping"
+    );
+
+
+    portfolioLine3.classList.remove(
+        "portfolioTyping"
+    );
+
+
+    openPortfolioProject.classList.remove(
+        "showOpenButton"
+    );
+
+}
+
+
+/* =========================================
+   START PORTFOLIO TYPING
+   ========================================= */
+
+async function startPortfolioTyping(){
+
+    resetPortfolioTyping();
+
+
+    /*
+    Wait for the portfolio.exe
+    pop-up animation to finish
+    */
+
+    await new Promise(
+        resolve => setTimeout(resolve,450)
+    );
+
+
+    /*
+    1. PORTFOLIO
+    */
+
+    await typePortfolioText(
+        portfolioTitle,
+        "PORTFOLIO",
+        120
+    );
+
+
+    await new Promise(
+        resolve => setTimeout(resolve,350)
+    );
+
+
+    /*
+    2. CONNECTING
+    */
+
+    await typePortfolioText(
+        portfolioLine1,
+        "> connecting to portfolio database...",
+        40
+    );
+
+
+    await new Promise(
+        resolve => setTimeout(resolve,300)
+    );
+
+
+    /*
+    3. CONNECTION ESTABLISHED
+    */
+
+    await typePortfolioText(
+        portfolioLine2,
+        "> connection established.",
+        45
+    );
+
+
+    await new Promise(
+        resolve => setTimeout(resolve,300)
+    );
+
+
+    /*
+    4. LOADING PROJECTS
+    */
+
+    await typePortfolioText(
+        portfolioLine3,
+        "> loading projects...",
+        50
+    );
+
+
+    await new Promise(
+        resolve => setTimeout(resolve,500)
+    );
+
+
+    /*
+    5. OPEN BUTTON
+    */
+
+    openPortfolioProject.classList.add(
+        "showOpenButton"
+    );
+
+}
+
+
+/* =========================================
+   OPEN PORTFOLIO WINDOW
+   ========================================= */
+
+viewPortfolio.addEventListener(
+    "click",
+    function(){
+
+        filePage.classList.remove(
+            "show"
+        );
+
+
+        setTimeout(
+            function(){
+
+                portfolioPage.classList.add(
+                    "show"
+                );
+
+
+                /*
+                START TYPING ONLY AFTER
+                PORTFOLIO WINDOW OPENS
+                */
+
+                startPortfolioTyping();
+
+            },
+            400
+        );
+
+    }
+);
+
+
+/* =========================================
+   CLOSE PORTFOLIO
+   ========================================= */
+
+closePortfolio.addEventListener(
+    "click",
+    function(){
+
+        portfolioPage.classList.remove(
+            "show"
+        );
+
+
+        resetPortfolioTyping();
+
+
+        setTimeout(
+            function(){
+
+                filePage.classList.add(
+                    "show"
+                );
+
+            },
+            400
+        );
+
+    }
+);
+
+
+/* =========================================
+   OPEN PORTFOLIO PROJECT
+   ========================================= */
+
+openPortfolioProject.addEventListener(
+    "click",
+    function(){
+
+        window.location.href =
+        "portfolio.html";
+
+    }
+);
+
+
+/* =========================================
+   RESIZE
+   ========================================= */
+
+window.addEventListener(
+    "resize",
+    function(){
+
+        resizeCanvas();
+
+        initializeDrops();
+
+    }
+);
+
+</script>
+
+</body>
+</html>
